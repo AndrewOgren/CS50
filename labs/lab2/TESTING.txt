@@ -1,0 +1,25 @@
+Testing birthday_match.sh:
+
+I tested the program manually on a machine in the cs department by trying all of the variations
+and issues that I could think of. This includes not having the correct 
+number of parameters, not providing the correct format, or an invalid date.
+This also includes not allowing dates prior to 09/14/1752.
+
+Testing count_files.sh: 
+
+I tested the program manually on stowe. I made sure that the added up count of the files
+added up to the file count of the `find ./ -type f | wc -l` command.
+
+Testing url_search.sh:
+
+I tested the program with my own url.txt file that I added two urls to. These two
+urls were the cs dartmouth website and the regular dartmouth website. It worked for 
+both of these. I also tested to make sure that it reported if there were the correct
+parameters or if the urls were invalid.
+
+Testing spy.sh:
+
+I tested the program multiple times by myself just to make sure that it was accurately 
+reporting sessions. Then for the final test, I tracked myself (Andrew J. Ogren) and Devina
+Kumar who was with me to help test. This is the spy.log that I am turning in from that 
+brief test. 

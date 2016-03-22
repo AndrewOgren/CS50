@@ -1,0 +1,71 @@
+Testing:
+I simply tested the program by testing the following:
+-no arguments
+-1 argument with temp below 50
+-1 argument with temp above 50
+-1 argument with temp not a number (letters)
+-2 arguments with temp and speed both in appropriate range
+-2 arguments with temp in incorrect range only
+-2 arguments with speed in incorrect range only
+-2 arguments with both in incorrect ranges
+-2 arguments with letters instead of numbers
+-more than 2 arguments
+
+These were all of the possibilities that I could think of.
+I didn't used any test scripts, but rather tested manually on the command line.
+
+Here is some output of these tests:
+
+[stowe:chill] 125) chilltest
+Temp 	Wind	Chill 
+-----	----	----- 
+
+-10.0 	5.0 	-22.3 
+-10.0 	10.0 	-28.3 
+-10.0 	15.0 	-32.2 
+
+0.0 	5.0 	-10.5 
+0.0 	10.0 	-15.9 
+0.0 	15.0 	-19.4 
+
+10.0 	5.0 	1.2 
+10.0 	10.0 	-3.5 
+10.0 	15.0 	-6.6 
+
+20.0 	5.0 	13.0 
+20.0 	10.0 	8.9 
+20.0 	15.0 	6.2 
+
+30.0 	5.0 	24.7 
+30.0 	10.0 	21.2 
+30.0 	15.0 	19.0 
+
+40.0 	5.0 	36.5 
+40.0 	10.0 	33.6 
+40.0 	15.0 	31.8 
+
+[stowe:chill] 126) chilltest j j
+Wind velocity must be greater than 0.5 MPH.
+[stowe:chill] 127) chilltest JKLJL FDSFS]
+Wind velocity must be greater than 0.5 MPH.
+[stowe:chill] 128) chilltest jflslj fjslfjsl fjslfjslj
+There are too many arguments.
+[stowe:chill] 129) chilltest 50
+The temperature must be less than 50.0 degrees Fahrenheit.
+[stowe:chill] 130) chilltest 49.9
+Temp 	Wind	Chill 
+-----	----	----- 
+49.9 	5.0 	48.1 
+49.9 	10.0 	45.9 
+49.9 	15.0 	44.5 
+
+[stowe:chill] 131) chilltest 49.9 .4
+Wind velocity must be greater than 0.5 MPH.
+[stowe:chill] 132) chilltest 49.9 .5
+Temp 	Wind	Chill 
+-----	----	----- 
+49.9 	0.5 	53.8 
+
+[stowe:chill] 133) chilltest 49.9 .5 6
+There are too many arguments.
+

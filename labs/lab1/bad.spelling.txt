@@ -1,0 +1,36 @@
+History of UNIX operating system.
+
+In 1969 Bell Labs was heavily involved with an operating
+system named Multics, a large multiuser op/sys running on a
+General Electric maneframe. In 1969 support for Multics was
+withdrawn leaving two men, Ken Thompson and Dennis Ritchie,
+wanting a comparable yet simpler alternative. Multics had grown
+immensely and become unmanagable by a small team of programmers.
+So Ritchie and Thompson did what many people wish they had the
+time and ability to do - they designed their own operating system
+from scretch.
+
+Thompson located an abandoned Digital PDP-7 in the basement of Bell
+Labs and commenced work producing an operating system on which a team
+of programmers could easily coordinate their efforts. It is often
+rumoured that Thompson actually wanted an independent operating system
+on which he could develop software for a multiplayer star-wars type 
+program in 3D! However to appease management Thompson recognized that 
+he must have a real application and so he asked the Bell Labs Legal 
+Department if they would test his ducument preparation system.  They loved it!
+An early version of the UNIX System was delivered to them on a PDP-11/20
+in 1971.
+
+Thompson's initial efforts culminated in the devlopment of an
+operating system, PDP-7 assembler and several utility programs. In
+1973 Dennis Ritchie was working on a programming language for
+operating system development, baseing his ideas upon BCPL, he
+developed B and finally created one called C. By the end of 1973,
+the UNIX kernal was written (85%) in C which enabled UNIX to be
+ported to other machines for which a C compiler could be
+fashioned. This was a great step blah blah blah 'cos it no longer tied the
+operating system to the PDP-7 as it would have been if it remained
+in assembly language. The first bigg such move was made in 1976
+when Dennis Ritchie and Stephen Johnston ported UNIX to an
+Interdata 8/32 machine. Since then UNIX has been ported by many
+people to many different single processer machines.

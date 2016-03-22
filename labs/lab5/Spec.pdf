@@ -1,0 +1,465 @@
+INDEXER 
+-------
+
+Specifications:
+(1) Design Specification
+(2) Functional Specification
+(3) Summary of Error Conditions
+(4) Test Cases & Expected Results
+
+
+(1) Design Specification
+__________________________
+
+(Input): Any inputs to the module
+
+There are two ways to properly execute this program.
+
+1.) Standard:
+	The standard way of running indexer is the following:
+
+	$ ./indexer [TARGET_DIRECTORY] [RESULTS FILE NAME]
+
+	The [TARGET_DIRECTORY] should be where the html files from crawler are included. So, for my directory
+	set-up, my target directory would be "../data/crawler/". The target directory must end in a "/", or else
+	it will not run correctly, and it will give an error message.
+
+	The [RESULTS FILE NAME] should be the file that the index will be written to. The results file name should
+	already exist prior to using it as an argument.
+
+2.) Testing:
+	The way to test the indexer is the following:
+	
+	$ ./indexer [TARGET_DIRECTORY] [RESULTS FILE NAME] [RESULTS FILE NAME] [REWRITTEN FILENAME]
+
+	The [TARGET_DIRECTORY] and [RESULTS FILE NAME] are the same as in the standard execution.
+
+	The second [RESULTS FILE NAME] should be the same as the first one. 
+
+	The [REWRITTEN FILENAME] should be another file to which you would like to write the index to once
+	it is rebuilt through use of the [RESULTS FILE NAME].
+
+Additionally, there is a --help option, which will explain how to properly execute the indexer as well.
+
+
+(Output): Any outputs of the module
+
+If in standard mode, the indexer will output into the [RESULTS FILE NAME] the index.
+The index will contain all of the words that were found in all of the documents. For each of the words,
+the total number of appearances it had in the documents will be given, and each of the documents in which
+it was found will be listed, along with the number of times it was found in that document.
+
+Here is some sample output:
+
+feasible 62 102 1 113 1 1135 1 1167 1 1212 1 1241 1 1251 1 1404 1 145 1 146 1 1572 1 1580 1 1588 3 1592 1 1663 1 17 1 1741 1 18 1 185 1 194 1 23 1 230 1 235 1 249 1 282 1 284 2 286 1 29 1 305 1 307 1 318 1 327 1 329 5 33 1 349 1 370 1 398 1 42 1 431 2 474 1 48 1 496 1 506 1 507 1 51 3 512 1 55 1 586 1 59 2 592 1 597 1 60 1 605 1 61 1 62 1 65 1 672 1 75 1 772 1 789 1 9 3 98 1 
+synth 1 102 1 
+bobic 1 1153 1 
+friedberg 3 116 4 251 1 580 1 
+sumerian 4 1163 1 20 1 341 1 66 2 
+alligator 3 1373 1 17 1 401 1 
+stillwater 2 1534 1 268 1 
+compressions 1 317 1 
+
+For the word 'compressions', the first 1 indicates that it was found in 1 file. The 317 indicates that it was fond in file
+number 317, and the 1 after that indicates that it was found once in that file.
+
+
+(Data Flow): Any data flow through the module
+
+The indexer uses the target directory to get the filenames. 
+
+For each file, it loads the html from the file and creates a unique document id from the file name.
+
+With that html, for each word in the html, it is appropriately added to the index hashtable. 
+
+Once all of the words from all of the files have been added to the index, the index is written to
+the [RESULTS FILE NAME] with the output format as shown in the Output section above.
+
+
+(Data Structures): Major data structures used by the module
+
+The main data structure utilized in the indexer is the hash table.
+
+Here is the implementation of the hashtable and its two types of nodes:
+
+typedef struct WordNode {             // A word node for storing the word
+	struct WordNode *next;
+	char *word;
+	struct DocNode *doc;
+} WordNode;
+
+typedef struct DocNode {			// A doc node for storing the doc id and # of occurrences
+	struct DocNode *next;
+	int docID;
+	int occurrences;
+} DocNode;
+
+typedef struct GenHashTable {
+    WordNode *table[MAX_HASH_SLOT];     // actual hashtable
+} GenHashTable;
+
+
+As can be seen above, the hash table is actually an array or WordNodes. For each slot in the
+hash table, there is a WordNode. Initially, all of the slots are set to null. If two words
+hash to the same slot, then a singly linked list is built at that slot with WordNodes, so that
+there may be more than one WordNode at a slot in the hash table.
+
+Each WordNode contains a pointer 'next', to another WordNode, or NULL if there is not another
+WordNode to point to. It also contains a word, and a pointer to 'doc', which is a DocNode.
+
+So, off of each WordNode is another singly-linked list of DocNodes. Each DocNode contains the
+unique docID of the html file and the number of occurrences that that word has in that document.
+It also contains a next pointer to another DocNode, or NULL if there is no other DocNode to point to.
+
+
+(5) Psuedo Code: Psuedo Code description of the module
+// Check Command line options (e.g. --help)
+
+// Check Command line arguments
+
+// Initialize the hash table
+
+// Build the index from given directory
+		
+	// Determine the number of files in the directory
+
+	For each file
+
+		//Load the file's html
+
+		//Create a unique document id for the file
+
+		For each word in the document
+
+			// Normalize the word
+
+			// Add it to the index
+
+	// Save the index to the file
+
+// Cleanup
+
+// If TESTING (argc == 5)
+
+	// Reload the index from the index file
+
+	// Save the new index to the new_index file
+
+// Cleanup
+
+// Done
+
+(2) Functional Specification
+_____________________________
+
+Data Structures and Variables:
+
+Refer to the Data Flow above.
+
+
+Prototype Definitions:
+
+/* Indexer functions that I created */
+
+/*
+ * buildIndexFromDirectory - gets all of the html file from the directory and builds an index with the words found
+ *
+ * @directory - the directory in which all of the html files are stored
+ * @index - the index that will be built
+ * @outputFile - the file to which the index will be written
+ * 
+ * Assumptions: The directory is valid and contains the html files
+ * The index has been initialized and allocated
+ * The output file already exists
+ *
+ * Pseudocode: 
+ * For each file
+ * Load the html
+ * Create a document id for the file
+ * While there are remaining words in the html
+ * If the word is greater than two characters
+ * Make the word all lowercase
+ * Update the index accordingly
+ * If updating the index fails, exit gracefully
+ * Once the index is complete, save it to a file
+ * Clean up
+ * Return the newly created index
+ */
+GenHashTable* buildIndexFromDirectory(const char* directory, GenHashTable* index, char *outputFile)
+
+
+/*
+ * UpdateIndex - updates the index accordingly
+ *
+ * @index - the index
+ * @word - the word that will be saved in the index
+ * @documentId - the unique id of the file
+ * 
+ * Assumptions - The index has been initialized properly
+ * The word and documentId are not NULL
+ * 
+ * Psuedocode:
+ * Lookup the provided word to see if it already exists in the index
+ * If if doesn't exist, call NewNodeInsert to insert a word node and a document node
+ * If it does exist, call DocNodeInsert to either increment the occurrences of a doc Node or add a doc node
+ * If either method fails, it will return 1
+ * If successful, return 0
+ */
+int UpdateIndex(GenHashTable *index, char *word, int documentId)
+
+
+/*
+ * SaveIndexToFile - Take the newly created index and formats the information to save in a file
+ * @index - the index
+ * @fileName - the file to which the index will be saved
+ * 
+ * Assumptions: The index has been filled in fully
+ * The file that it is writing to already exists
+ *
+ * Pseudocode:
+ * Open the file for writing
+ * If the file cannot be opened, return 1, indicating failure
+ * For each node in the index (hashtable array)
+ * get the word from the word node
+ * Make sure it's not null
+ * For each of the word node's in the linked list at that hash slot
+ * Go through the word node's linked list of doc nodes to count the number of docs
+ * For each of its doc nodes, get the doc id and occurrences
+ * Send this info to the file
+ * Move to the next word node
+ * Close the file
+ * Return 0 upon success
+ */
+int SaveIndexToFile(GenHashTable *index, char* fileName)
+
+/*
+ * ReadFile - Recreates the index from the given file
+ *
+ * @file - the file that contains the inverted index
+ *
+ * Assumptions: the provided file contains the previously created inverted index
+ * 
+ * Pseudocode: 
+ * Open the file for reading
+ * If the file can't be opened for reading, exit accordingly
+ * Initialize the new index
+ * While it hasn't reached the end of the file
+ * Record the current position in the file
+ * Scan the first word for the number of characters and save it in numChars
+ * Allocate memory for that word accordingly
+ * Move the current position back to the recorded position in the file
+ * Scan and save the word and the numfiles that it was seen in 
+ * For each file that the word was seen in 
+ * Scan and save the docid of the file and the number of occurrences in that file
+ * For each occurrence of the word in that file, update the index accordingly
+ * Close the file
+ * Return the new index
+ */
+GenHashTable *ReadFile(char *file)
+
+/*______________________________________________________________*/
+
+
+/* File functions that I created */
+
+/*
+ * LoadDocument - Gets a file from the directory and loads the html
+ * @directory - the directory that holds the html files
+ * @fileName - the name of the html file to read
+ *
+ * Assumptions: The directory and filename are both valid
+ *
+ * Psuedocode: 
+ * Append the filename to the directory to form the complete path to the file
+ * Open that file for reading using the full path name
+ * Make sure it's not null
+ * Use fseek and ftell to record length of the html file
+ * allocate memory for the html string appropriately
+ * Get rid of the first two lines that were added to the html in crawler
+ * Read the rest of the html into the htmlstring
+ * Close the file and return the htmlstring
+ */
+char *LoadDocument(const char *directory, char *fileName)
+
+/*
+ * GetDocumentId - Creates a document id for the file based on its name
+ *
+ * @fileName - the name of the file to create the id for
+ *
+ * Assumptions - that file exists
+ *
+ * Pseudocode: 
+ * Convert the filename to an integer
+ * If it returns 0, then the conversion failed, so return a negative integer to indicate this
+ * return the docId
+ */
+int GetDocumentId(char *fileName)
+
+
+/*_____________________________________________________________*/
+
+/* Hahstable functions that I created */
+
+/*
+ * initializeHashTable - initializes a hash table type
+ * 
+ * Assumptions - none
+ * Pseudocode:
+ * Allocate memory for a HashTable type
+ * Run through all of the slots of the table array, and set them to NULL initially
+ * Return the Hashtable
+ */
+
+GenHashTable* InitializeHashTable()
+
+
+/*
+ * LookupWord - Determines if the word has been added to the hashtable already
+ * @key - the word
+ * @tableptr - a pointer to the index table
+ *
+ * Assumptions: table is already allocated and the word is not null
+ *
+ * Pseudocode: 
+ * Hash the key to get the index
+ * if the table is empty at that index, the word has not been added
+ * if the table is not empty at that index
+ * while there are word nodes, compare the words to the given word
+ * If there is a match, the word has already been added
+ * When there are no nodes left, this means the word has not been added
+ *
+ */
+int LookupWord(char *key, GenHashTable *tableptr)
+
+/*
+ * NewNodeInsert - Adds a word node and a doc node 
+ * @key - the word to be added
+ * @docID - the id of the document in which the word is found
+ * @tableptr - a pointer to the index table
+ *
+ * Assumptions: index has been allcoated
+ *
+ * Pseudocode:
+ * Allocate memory for a wordnode
+ * Allocate memory for a document node
+ * Initialize the members of the document node and word node appropriately
+ * Get the location in the index table
+ * If it is empty, add it there
+ * If it's not empty, go through the linked list until you hit a NULL pointer to next
+ * Add the word node there
+ */
+int NewNodeInsert(char *key, int docID, GenHashTable *tableptr)
+
+/*
+ * DocNodeInsert - When the word has already been added, add a doc node or increment doc node
+ * @key - the word
+ * @docID - the id of the document in which the word is found
+ * @tableptr - a pointer to the index table
+ *
+ * Assumptions: the index and key have been allocated properly
+ *
+ * Pseudocode:
+ * Hash the key to get the proper index
+ * Find the point in the linked list at which the word node is saved
+ * At this point, travel down the linked list of document nodes until
+ * either it finds a document with the same docID as the current one
+ * or it reaches the end of the document linked list
+ * if the document already exists, increment its occurrences and return 0
+ * if the document doesn't exist, create a document node, allocate its members
+ * and save it at the end of the document linked list
+ *
+ */
+int DocNodeInsert(char *key, int docID, GenHashTable *tableptr)
+
+/*
+ * TestingIndex - turn on testing
+ * Assumptions - none
+ * Psuedocode:
+ * set the private variable 'testing' to 1
+ * so that words are not freed that were not allocated
+ */
+void TestingIndex()
+
+*/_________________________________________________________________*/
+
+
+Macro Definitions:
+
+#define TESTING 5
+#define STANDARD 3
+
+For the number of arguments received on the command line.
+
+
+(3) Summary of Error Conditions:
+_________________________________
+
+
+Here are some of the possible errors in indexer:
+
+1.) Memory allocation errors
+2.) File opening errors
+3.) Directories or files do not exist
+4.) Files do not have reading or writing permissions
+5.) Data files are empty
+6.) Incorrect number of arguments
+7.) Data files that are non-numeric (not 1,2,3, etc)
+8.) Invalid options (any switches other than --help)
+9.) If the target directory doesn't end in a '/'
+
+
+(4) Test Cases & Expected Results:
+__________________________________
+
+I test most of the above cases in my BATS.sh.
+Here are the tests and what is expected:
+
+(TEST) Testing the --help option with no other arguments
+(EXPECT) Should display the help message and terminate
+
+(TEST) Testing the --help option with other arguments
+(EXPECT) Should display the help message and terminate
+
+(TEST) Testing with no arguments
+(EXPECT) Error Message and Terminate
+
+(TEST) Testing with 1 argument
+(EXPECT) Error Message and Terminate
+
+(TEST) Testing with 5 arguments (too many)
+(EXPECT) Error Message and Terminate
+
+(TEST) Testing with a directory that doesn't exist
+(EXPECT) Error Message and Terminate
+
+(TEST) Testing with a directory path that doesn't end in a '\'
+(EXPECT) Error Message and Terminate
+
+(TEST) Testing with a file that doesn't exist
+(EXPECT) Error Message and Terminate
+
+(TEST) Testing with an empty file
+(EXPECT) Error Message, but don't terminate
+
+(TEST) Testing with a non-numeric file
+(EXPECT) Error Message and Terminate
+
+(TEST) Testing with an empty directory
+(EXPECT) Error Message and Terminate
+
+(TEST) Testing writing to a file that does not have write permissions
+(EXPECT) Error Message and Terminate
+
+(TEST) Testing with the first [RESULTS FILE NAME] being different from the second in testing mode
+(EXPECT) Error Message and Terminate
+
+(TEST) Test with valid inputs with 1746 files crawled at depth 2; do this in testing mode
+(EXPECT) Both index.dat and new_index.dat should be identical
+
+
+
+
+
+
+
+

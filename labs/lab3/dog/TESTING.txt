@@ -1,0 +1,143 @@
+I tested my program through many tests on the command line, where I utilized
+all of the different switches and attempted to break the program by giving it executable files
+or files that didn't exist and so on.
+
+Here are some of the tests:
+
+
+
+[stowe:dog] 215) dogtest
+afjslfjsl
+afjslfjsl
+lfjsisiissiissssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+lfjsisiissiissssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+^C
+
+[stowe:dog] 216) dogtest -
+slfjslfjs
+slfjslfjs
+wfifojoajf
+wfifojoajf
+^C
+
+[stowe:dog] 217) dogtest - -n
+fjslfjl
+1 fjslfjl
+sssssss
+2 sssssss
+ioaoafofja
+3 ioaoafofja
+^C
+
+[stowe:dog] 218) dogtest - -m mapfile.txt
+Hello
+Hfmmp
+How are you
+Hpx bsf zpv
+Excellent, thanks
+Eydfmmfou, uibolt
+^C
+
+[stowe:dog] 219) dogtest - -M mapfile.txt
+Hello
+Hdkkn
+How are you
+Hnv zqd xnt
+Excellent, thanks
+Ewbdkkdms, sgzmjr
+^C
+
+[stowe:dog] 220) dogtest -nm mapfile.txt
+Hi, how are you doing?
+1 Hj, ipx bsf zpv epjoh?
+^C
+
+[stowe:dog] 221) dogtest -nM mapfile.txt
+Hi, how are you doing?
+1 Hh, gnv zqd xnt cnhmf?
+^C
+
+[stowe:dog] 222) dogtest -mM
+There was an error opening the map file: M
+[stowe:dog] 223) dogtest -m mapfile.txt M mapfile.txt
+There was an error opening the file: M
+
+[stowe:dog] 224) dogtest -m mapfile.txt -M mapfile.txt
+well hello there
+well hello there
+perfect
+perfect
+^C
+
+[stowe:dog] 225) dogtest -nm mapfile.txt tester.txt
+1 Tijt jt b uftu up nblf tvsf nz qsphsbn jt xpsljoh.
+2 Tijt jt uif tfdpoe mjof pg uftufs up tff jg ju ijut uif tfdpoe mjof.
+
+[stowe:dog] 226) dogtest -nM mapfile.txt tester.txt
+1 Tghr hr z sdrs sn lzjd rtqd lx oqnfqzl hr vnqjhmf.
+2 Tghr hr sgd rdbnmc khmd ne sdrsdq sn rdd he hs ghsr sgd rdbnmc khmd.
+
+[stowe:dog] 227) dogtest -nM mapfile.txt tester.txt > decryptedtext.txt
+
+[stowe:dog] 228) dog decryptedtext.txt
+-bash: dog: command not found
+
+[stowe:dog] 229) dogtest decryptedtext.txt
+1 Tghr hr z sdrs sn lzjd rtqd lx oqnfqzl hr vnqjhmf.
+2 Tghr hr sgd rdbnmc khmd ne sdrsdq sn rdd he hs ghsr sgd rdbnmc khmd.
+
+[stowe:dog] 230) dogtest -nM mapfile.txt 
+slfjwofjsojfso
+1 rkeivneirniern
+^C
+
+[stowe:dog] 231) dogtest -nM 
+Option 'M' requires an argument!
+[stowe:dog] 232) dogtest -nm
+Option 'm' requires an argument!
+[stowe:dog] 233) dogtest -mM
+There was an error opening the map file: M
+[stowe:dog] 234) dogtest -mn
+There was an error opening the map file: n
+[stowe:dog] 235) dogtest --help
+Usage for dog.c: 
+Concatenates files or standard input to standard output or another file.
+
+Switches:
+'-n': numbers the nonempty output lines
+'-m' mapfile: uses a cipher to encrypt input
+'-M' mapfile: decrypts input back to plaintext (english alphabet)
+'--help': display this help message and terminate
+
+With no file argument, or when first argument is '-', read from standard input.
+This is version 1.0
+
+
+Here is an example of the contents of my mapfile:
+
+a b
+b c
+c d
+d e
+e f
+f g
+g h
+h i
+i j
+j k
+k l
+l m
+m n
+n o
+o p
+p q
+q r
+r s
+s t
+t u
+u v
+v w
+w x
+x y
+y z
+z a

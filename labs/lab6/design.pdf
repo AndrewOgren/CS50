@@ -1,0 +1,453 @@
+QUERY 
+-------
+
+Specifications:
+(1) Design Specification
+(2) Functional Specification
+(3) Summary of Error Conditions
+(4) Test Cases & Expected Results
+
+
+(1) Design Specification
+__________________________
+
+
+(Input): Any inputs to the module
+
+First, to run query, do the following:
+
+./query [INDEX FILE PATH] [CRAWLER DIRECTORY PATH]
+
+The [INDEX FILE PATH] is the path to the index file that was created in Indexer.
+
+The [CRAWLER DIRECTORY PATH] is the path to the directory that holds the html files from crawler.
+
+Then, once query is running, and you see the prompt to query (QUERY:>):
+
+Type any words to search for them in the html of the urls.
+
+However, AND and OR are special keywords.
+
+If you want both words to appear in the document, use 'AND' in between them.
+
+If you want either word to appear in the document, use 'OR' in between them.
+
+Additionally, having two words next to each other is counted as an 'AND' for both of the words.
+
+When you are done, type 'q' and then return to exit.
+
+Additionally, there is a --help option, which will explain how to properly execute the query as well.
+
+
+(Output): Any outputs of the module
+
+The outputs of the module are the results of the query.
+
+If there are no matches for the query, the program will output:
+
+"Sorry, there were no matches."
+
+Else, the program will output the list of documents and their associated urls. 
+The documents will be ranked such that the document with the highest number of total occurrences
+of the queried words will come first.
+
+Here is some sample output of a query:
+
+Document ID:881 URL:http://www.cs.dartmouth.edu/~cs50/tse/wiki/Santa_Cruz_Operation.html
+Document ID:1266 URL:http://www.cs.dartmouth.edu/~cs50/tse/wiki/Mascot.html
+Document ID:1138 URL:http://www.cs.dartmouth.edu/~cs50/tse/wiki/Long_Island.html
+Document ID:1042 URL:http://www.cs.dartmouth.edu/~cs50/tse/wiki/SCO_OpenServer.html
+Document ID:737 URL:http://www.cs.dartmouth.edu/~cs50/tse/wiki/Workstation.html
+Document ID:1561 URL:http://www.cs.dartmouth.edu/~cs50/tse/wiki/Thomas_More_College_of_Liberal_Arts.html
+Document ID:1511 URL:http://www.cs.dartmouth.edu/~cs50/tse/wiki/Clarkson_Golden_Knights.html
+
+
+(Data Flow): Any data flow through the module
+
+The query first rebuilds the index from the index file created in indexer.
+
+Then, for each query,
+
+A singly-linked list is initialized that will contain the query nodes.
+
+The query nodes each contain a url, docID, and totalOccurrences of the words found in that document.
+
+Then the query is parsed such that the AcceptQueries() function goes through each word individually.
+
+In this function, 
+
+Several arrays are declared:
+ 	-docArray holds the current word's documents that it was found in
+ 	-compareArray keeps a running list of documents that contain all of the words up until an 'OR'
+	-archiveArray holds all of the documents that will eventually need to be sorted and have their urls added
+	-wordArray is a list of all of the words, not including the special keywords, 'AND' and 'OR'
+ 
+ For each word
+ 	Make it all lowercase and get rid of any whitespace unless it's 'AND' or 'OR'
+ 	If the word is 'q', exit query
+ 	If the word is 'OR', 
+		create or update the archive array appropriately
+	If the word is 'AND',
+		move on to the next word, because two words next to each other without an 'AND' are treated the same way
+ 	If it's a regular word, search for it in the index
+	If it's not found, NULL is returned, and noMatches is set to 1 until an 'OR' is used with another word
+	If it's found, then the docArray is returned, and
+		the word is added to the wordArray and
+ 		the docArray is compared with the compareArray, so that the compareArray is updated
+	Once there are no more words,
+		If there were no matches, let the user know
+ 		If OR was never used, but there are matches, rank the documents in the compareArray
+		If the archiveArray is not NULL (meaning OR was used), fully update the archiveArray, and then rank the documents in it
+ 	With the returned singly-linked list from the RankDocuments function, go through each node and print out the docID and url
+
+
+(Data Structures): Major data structures used by the module
+
+The hash table that was used in indexer is rebuilt. To get more info on this, look at the indexer design spec.
+
+In query, the main data structure is the singly-linked list that holds the documents that will need to be printed out to the screen.
+
+typedef struct QueryResponse {					//A node of the list that contains information that will be printed out
+	struct QueryResponse *next;
+	int docID;
+	int totalOccurrences;
+	char* url;
+} QueryResponse;
+
+typedef struct List {
+    QueryResponse *head;                          // "beginning" of the list
+} List;
+
+As can be seen from the typedef declaration, the QueryResponse node contains a document id, the url of the document id,
+and the totalOccurrences. The totalOccurrences represents the number of times that all of the words in the wordArray were
+found in that document added together. This is used to rank the documents in the right order in the singly-linked list.
+
+
+(5) Psuedo Code: Psuedo Code description of the module
+
+//Check command line options
+
+//Check command line arguments
+
+//Rebuild the hash table
+
+//Accept Queries
+
+	//Wait permanently for a query
+
+	//Once a query is received
+		
+		//Break the query up by words
+
+		//Initialize the query List and declare arrays
+
+		// SEE PSEUDO CODE FOR ACCEPTQUERIES() FUNCTION 
+
+	//Quit when 'q' is received, and cleanup memory
+
+(2) Functional Specification
+_____________________________
+
+Data Structures and Variables:
+
+Refer to the Data Flow above.
+
+
+Prototype Definitions:
+
+//In query.c
+
+/*
+ * AcceptQueries - takes all of the user's queries and handles them accordingly
+ *
+ * @index - the index that was just rebuilt from the index file
+ * @dirPath - the path to the directory that contains the crawled files
+ *
+ * Assumptions - None - assume that the user can type anything
+ *
+ * Pseudo Code:
+ * Prompt for queries
+ * Wait for input permanently
+ * When input is received, initialize a query list
+ * Declare several arrays:
+ * 	docArray holds the current word's documents that it was found in
+ * 	compareArray keeps a running list of documents that contain all of the words up until an 'OR'
+ * 	archiveArray holds all of the documents that will eventually need to be sorted and have their urls added
+ * 	wordArray is a list of all of the words, not including the special keywords, 'AND' and 'OR'
+ * Split the input up by spaces
+ * For each word
+ * Make it all lowercase and get rid of any whitespace unless it's 'AND' or 'OR'
+ * If the word is 'q', exit query
+ * If the word is 'OR', 
+ * 	create or update the archive array appropriately
+ * If the word is 'AND',
+ * 	move on to the next word, because two words next to each other without an 'AND' are treated the same way
+ * If it's a regular word, search for it in the index
+ * If it's not found, NULL is returned, and noMatches is set to 1 until an 'OR' is used with another word
+ * If it's found, then the docArray is returned, and
+ * the word is added to the wordArray and
+ * the docArray is compared with the compareArray, so that the compareArray is updated
+ * Once there are no more words,
+ * If there were no matches, let the user know
+ * If OR was never used, but there are matches, rank the documents in the compareArray
+ * If the archiveArray is not NULL (meaning OR was used), fully update the archiveArray, and then rank the documents in it
+ * With the returned singly-linked list from the RankDocuments function, go through each node and print out the docID and url
+ * Free any allocated memory
+ * Wait for more user input
+ */
+int AcceptQueries(GenHashTable *index, const char* dirPath);
+
+
+/*
+ * CleanUpWord - takes a word and removes whitespace or newline characters and makes it lowercase
+ * 
+ * @token - the word to "clean-up"
+ *
+ * Assumptions - Input is a string
+ * 
+ * Pseudo Code:
+ * Takes the word and
+ * while there is whitespace at the front of it, it moves along and gets rid of it
+ * If it was all whitespace, then return it
+ * Find the end of the string
+ * While you haven't reached the beginning of the string and there's still whitespace
+ * move back a character
+ * If the word is not 'OR' or 'AND', make all of the characters lowercase
+ * return the words
+ */
+char* CleanUpWord(char* token)
+
+/*_____________________________________________________________*/
+
+//In rank.c
+
+/*
+ * InitializeList - initializes the list of query nodes
+ *
+ * Assumptions - the list has not been initialized already
+ * Pseudo Code:
+ * Allocate space for the list
+ * set the head to null
+ * return the newly initialized list
+ */
+List* InitializeList()
+
+
+/*
+ * RankDocuments - for each document in the docArray, it orders it by occurrences of all of the words and adds the appropriate url
+ *
+ * @docArray - the array with all of the documents that should be displayed
+ * @dirPath - the path to the crawled html files
+ * @wordArray - the array containing all of the queried words
+ * @queryList - the initialized singly-linked list
+ * @index - the rebuilt index containing all of the words and their occurrences
+ *
+ * Assumptions - the parameters are all appropriately allocated
+ *
+ * Pseudo code:
+ * Get the number of documents in the docArray
+ * For all of the documents in the docArray
+ * If the docID is 0, this means that it should not be included, so skip it
+ * Initialize a query node of the appropriate size
+ * Add the doc id
+ * For each word in the word array
+ * Find it in the index, find the associated document, and add the number of occurrences to the total # of occurrences
+ * Add the url to the query node by calling AddUrl
+ * Add it at the appropriate point in the singly-linked list based on the number of occurrences
+ */
+int RankDocuments(int* docArray, const char* dirPath, char* wordArray, List* queryList, GenHashTable* index)
+
+
+/*
+ * AddURL - adds the appropriate url for the crawler document
+ *
+ * @queryNode - the node that was created in RankDocuments
+ * @docID - the document id found in the docArray
+ * @dirPath - the path to the crawled files
+ *
+ * Assumptions - the dirPath is a valid path to the crawled html files
+ * - the docID is the name of one of the files in that directory
+ * 
+ * Pseudo Code:
+ * make the integer docID into a string
+ * concatenate the docID with the dirPath to form the full filepath
+ * open the file
+ * the first line should be the url, so
+ * scan the first line and get how many characters it is
+ * allocate enough space for that many characters
+ * rewind and scan the url, and add it to the querynode's member
+ * free memory and return
+ * 
+ */
+int AddURL(QueryResponse *queryNode, int docID, const char *dirPath)
+
+
+/*
+ * FreeQueryNodes - frees the nodes and their members from the singly-linked query list
+ *
+ * @queryList - the list that is used to output the docids and urls
+ *
+ * Assumptions - the queryList has been initialized
+ * 
+ * Pseudo Code:
+ * If there are no nodes, simply free the list
+ * If there are nodes, 
+ * start at the head
+ * while there are remaining nodes
+ * free the current node and its members
+ * move to the next node
+ * finally free the list
+ */
+void FreeQueryNodes(List* queryList)
+
+/*_____________________________________________________________*/
+
+//New functions in the libtseutil.c
+
+/*
+ * SearchIndex - searches the index for the given word and returns a list of documents it's in
+ *
+ * @word - the word to search the index for
+ * @index - the index to search for the word in 
+ *
+ * Assumptions - The index has already been rebuilt using ReadFile
+ *
+ * Pseudo Code:
+ * Find if the word exists in the index
+ * If the word does exist
+ *  Find the word node in the index
+ *  Figure out how many document nodes there are for that word node
+ *  Fill an array with all of those document ids
+ *  return that document array
+ * If the word does not exist
+ *  return NULL
+ */
+int* SearchIndex(char* word, GenHashTable *index)
+
+/*_____________________________________________________________*/
+
+//function used to rebuild index from indexer.c, now in libtseutil.c
+
+/*
+ * ReadFile - Recreates the index from the given file
+ *
+ * @file - the file that contains the inverted index
+ *
+ * Assumptions: the provided file contains the previously created inverted index
+ * 
+ * Pseudocode: 
+ * Open the file for reading
+ * If the file can't be opened for reading, exit accordingly
+ * Initialize the new index
+ * While it hasn't reached the end of the file
+ * Record the current position in the file
+ * Scan the first word for the number of characters and save it in numChars
+ * Allocate memory for that word accordingly
+ * Move the current position back to the recorded position in the file
+ * Scan and save the word and the numfiles that it was seen in 
+ * For each file that the word was seen in 
+ * Scan and save the docid of the file and the number of occurrences in that file
+ * For each occurrence of the word in that file, update the index accordingly
+ * Close the file
+ * Return the new index
+ */
+GenHashTable *ReadFile(char *file)
+
+/*_____________________________________________________________*/
+
+Macro Definitions:
+
+In query.c:
+
+#define MAXCHARS 1000
+
+-this is the max number of characters the buffer will accept for a single query
+
+(3) Summary of Error Conditions:
+_________________________________
+
+
+1.) too few arguments
+2.) too many arguments
+3.) directory path that doesn't exist
+4.) file path that doesn't exist
+5.) wrong permissions for index file or crawler directory
+6.) bad command line option
+7.) memory allocation failure
+8.) If the crawler directory doesn't end in a '/'
+9.) file opening errors
+
+For the queries, the only errors that should ever occur are memory allocation failures.
+
+
+(4) Test Cases & Expected Results:
+__________________________________
+
+In queryengine_test.c, I do some unit testing:
+
+I test:
+-rebuilding the index
+-initializing the index
+-determining if a word exists in the index
+-initializing the query list
+-filling the query list
+-check to see if documents are properly added
+-check to see if urls are properly added
+-check to see if documents are properly ranked
+
+**All of the above should be successful
+
+
+I test most of the above cases in my QEBATS.sh.
+Here are the tests and what is expected:
+
+(TEST) Testing the --help option with no other arguments
+(EXPECT) Should display the help message and terminate
+
+(TEST) Testing the --help option with other arguments
+(EXPECT) Should display the help message and terminate
+
+(TEST) Testing with too few arguments
+(EXPECT) Error Message and Terminate
+
+(TEST) Testing with too many arguments
+(EXPECT) Error Message and Terminate
+
+(TEST) Testing with a directory that doesn't exist
+(EXPECT) Error Message and Terminate
+
+(TEST) Testing with a directory path that doesn't end in a '\'
+(EXPECT) Error Message and Terminate
+
+(TEST) Testing with a file that doesn't exist
+(EXPECT) Error Message and Terminate
+
+For the queries, I test the following:
+
+One word that has results: 'chicken'
+One word that doesn't have results: 'fanefnla'
+Two words, both with matches: 'chicken AND pizza'
+Two words, only one with matches:'chicken AND afnkakew'
+Two words, only one with matches, in reverse order: 'afnkakew AND chicken'
+Two words, both with matches, with an OR: 'computer OR chicken'
+Two words, only one with a match, with an OR: 'pizza OR anflfl'
+Three words, all match, with one OR: 'computer chicken OR pizza'
+Three words, should only get results of third: 'computer anflenal OR pizza'
+
+Now some strange input to try to break query:
+computer AND chicken OR
+computer AND nflawnfe OR
+OR computer
+OR computer anflaenfla
+computer alfnalefma OR chicken pizza OR science
+OR OR OR pizza
+pizza OR OR AND chicken
+
+**All of these tests should give properly ranked output of the appropriate documents,
+or if there are no appropriate documents, it should tell the user.
+
+
+
+
+
+

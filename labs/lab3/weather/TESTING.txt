@@ -1,0 +1,65 @@
+TESTING:
+
+I tested with the following codes:
+KMWN
+KAGC
+KPIT
+KLOM
+
+Here is the output from KMWN:
+Visibility in miles: 60.00
+Wind: from the Southwest at 42.6 gusting to 51.8 MPH (37 gusting to 45 KT)
+Relative humidity: 79
+Temperature: 18.0 F (-8.0 C)
+Weather: Mostly Cloudy and Windy
+Time of observation: Last Updated on Jan 25 2016, 10:55 pm EST
+Station ID: KMWN
+Location: Mount Washington, NH
+Credit: NOAA's National Weather Service
+
+The above were all valid codes and were successful.
+
+I also tested with the following:
+(nothing)
+which gives output:
+
+./weather needs one arg, a location code like KMWN which would be Mt. Washington
+ To lookup location codes, see 
+http://w1.weather.gov/xml/current_obs/seek.php?state=ak&Find=Find
+
+I tested a string longer than 4 characters:
+jflsljfls
+which gives output:
+Location code must be 4 characters.
+
+I tested a string shorter than 4 characters:
+eef
+which gives output:
+Location code must be 4 characters.
+
+I tested an invalid 4 character code:
+JOQW (not a valid code)
+which gives output:
+The station code JOQW couldn't be found.
+
+Here is the command line input and output:
+[stowe:weather] 140) weathertest
+./weather needs one arg, a location code like KMWN which would be Mt. Washington
+ To lookup location codes, see 
+http://w1.weather.gov/xml/current_obs/seek.php?state=ak&Find=Find
+[stowe:weather] 141) weathertest JKJ JOJO
+./weather needs one arg, a location code like KMWN which would be Mt. Washington
+ To lookup location codes, see 
+http://w1.weather.gov/xml/current_obs/seek.php?state=ak&Find=Find
+[stowe:weather] 142) weathertest JOJlJIJf
+Location code must be 4 characters.
+[stowe:weather] 143) weathertest
+./weather needs one arg, a location code like KMWN which would be Mt. Washington
+ To lookup location codes, see 
+http://w1.weather.gov/xml/current_obs/seek.php?state=ak&Find=Find
+[stowe:weather] 144) weathertest jflsljfls
+Location code must be 4 characters.
+[stowe:weather] 145) weathertest eef
+Location code must be 4 characters.
+[stowe:weather] 146) weathertest JOQW
+The station code JOQW couldn't be found.

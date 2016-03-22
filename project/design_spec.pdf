@@ -1,0 +1,274 @@
+Design Spec for AMStartup.c Program:
+
+(1) Input: Any inputs to the module
+(2) Output: Any outputs of the module
+(3) Data Flow: Any data flow through the module
+(4) Data Structures: Major Data structures used by the module
+(5) Pseudo Code: pseudo code description of the module
+
+
+(Input): Any inputs to the module
+_________________________________
+
+
+There are several parameters that AMStartup.c takes on the command line:
+
+1.) [nAvatars] : This is the number of avatars that will be in the maze. The number of
+avatars must be greater than 0 but less than or equal to 10.
+
+2.) [Difficulty] : This is the level of difficulty for the maze. The difficulty must be 
+greater than or equal to 0 but less than 10.
+
+3.) [Hostname] : The hostname of the server. For this particular project, this server
+will be "flume.cs.dartmouth.edu"
+
+Thus, an example of executing this on the command line, where the executable is nameed
+"AMStartup", would be:
+
+./AMStartup [nAvatars] [Difficulty] [Hostname]
+
+
+The person executing this is expected to have knowledge of what the appropriate arguments are.
+Therefore, the argument checking is not comprehensive.
+
+(Output): Any Outputs of the module
+___________________________________
+
+The AMStartup.c program creates a new log file with the name Amazing_$USER_N_D.log, where $USER is the current userid, N is the value of nAvatars and D is the value of Difficulty. The first line of the file should contain $USER, the MazePort, and the date & time. 
+
+Then, within this logfile, each of the avatars will log their locations within the maze. 
+When they all meet and the maze is solved, it will log the special hash that is returned from AM_MAZE_SOLVED.
+
+
+(3) Data Flow
+___________________________________
+
+The AMStartup.c program builds an AM_INIT message with the nAvatars and the Difficulty and sends it to the AM_SERVER_PORT.
+
+If the initialization succeeds, the server will respond with an AM_INIT_OK message.
+
+If nAvatars is greater than AM_MAX_AVATAR or the Difficulty is greater than AM_MAX_DIFFICULTY, the server will respond with an AM_INIT_FAILED message.
+
+If the AM_INIT_OK message is received, then  the server will respond with this message containing a TCP/IP port number that Avatars should use to communicate with the server.
+
+AMSTartup.c will use this port number to call the avatar executable with the proper arguments.
+
+
+(4) Data Structures
+___________________________________
+
+This program doesn't use data structures. The data structures will be used in avatar.c
+
+
+(5) Pseudo Code
+___________________________________
+
+// Do parameter checks 
+
+// Create a log file with the name Amazing_$USER_N_D.log 
+
+// build an AM_INIT message with the nAvatars and the Difficulty and send it to AM_SERVER_PORT
+
+// Check to see what type of message is received back
+
+// If there's an error in the message type received back (use bitmask)
+	// Cleanup
+	// Exit program
+
+// If AM_INIT_OK message received, the server will have responded with the special port number (MazePort)
+
+// Call avatar executable with appropriate arguments
+
+// exit 
+
+
+_____________________________________
+
+Design Spec for avatar.c program
+
+(Input) Any inputs to the module
+________________________________
+
+
+1.) nAvatars : total number of Avatars
+2.) Difficulty: difficulty of the maze
+3.) IP address of the server (129.170.212.235)
+4.) MazePort : as returned in the AM_INIT_OK message
+5.) Filename of the log the Avatar should open for writing in append mode.
+6.) The width of the maze.
+7.) the height of the maze.
+
+
+(Output) Any outputs of the module
+__________________________________
+The first line with the user, mazeport, date, and time is written to the log file.
+
+The positions of the avatars within the maze are logged for each turn. This is sent to the
+logfile that was passed as a parameter. Then, when the maze is solved or too many moves are used,
+this is also logged in the logfile.
+
+The maze graphics will also be updated after every round of turns. These are ASCII graphics and
+can simply be viewed on the terminal.
+
+Additionally, two other log files are created by the server, when the program is run. These two files,
+log.out and log.err record the movements of the avatars and any errors respectively. Additionally, the server
+generates PNG images for every "round" of Avatar turns. These files can be found in a directory that starts with
+/var/tmp/<mazeport>, where the <mazeport> is specific to the program being run.
+
+
+(3) Data Flow
+__________________________________
+
+1.) Initialize the mazeArray, which creates walls at all of the edges. The data is shared amongst
+	all of the avatars.
+
+2.) A thread is created for each of the avatars with a unique avatarId.
+
+3.) Update the mazeArray with the initial positions of all of the avatars.
+
+4.) Update all of the breadCrumbsLists with the position of the respective avatar.
+
+5.) Sedn AM_AVATAR_READY messages from each avatar.
+
+6.) Once the server receives all of the AM_AVATAR_READY messages, the server responds to them
+with an identical AM_AVATAR_TURN message. 
+
+7.) Each avatar takes a turn making a move in the maze by sending an AM_AVATAR_MOVE message to
+the server with their AvatarId, and an integer indicating which direction (M_WEST, M_NORTH, M_SOUTH,
+M_EAST) the Avatar wishes to try to move. Or, it may indicate to the server that no move is desired.
+(M_NULL_MOVE).
+
+8.) The server will validate the AvatarId for this maze, and respond with AM_NO_SUCH_AVATAR if it is
+invalid. Otherwise, the server proceeds to determine whether or not that move is possible. If the move
+is valid that Avatar's position in the maze will be updated.
+
+7.) After an avatar makes a move, the server sends an updated AM_AVATAR_TURN message. This message will
+have the moving Avatar's possibly updated (x,y) position and the TurnID incremented (modulo N) to enable the next Avatar to move. The message includes the TurnID, followed by (x,y) pairs representing the current positions of each of the N avatars: Avatar0, Avatar1, ..., Avatar-(n-1).
+
+8.) If/When an avatar sends a move request to the server that results in all of the avatars being located at the same (x,y) position, the server will respond with a special message containing a proof that the maze was solved. When the avatars receive this message, one of them will write that message to the log file.
+
+9.) If the server ever receives a message that it can't understand (AM_UNKNOWN_MESSAGE_TYPE), it will respond with an error message, and the unrecognized message type.
+
+10.) If the server receives a message type out of order, the message will be returned. 
+
+11.) If the server receives an AM_AVATAR_MOVE message when it is not that avatar's turn to move, the 
+server will ignore that move request and respond with the message.
+
+12.) If the maze is not solved, the program will have ended for 1 of 4 primary reasons. 
+	1.) AM_TOO_MANY_MOVES - If the server returns this message after receiving an AM_AVATAR_MOVE message, each avatar cleans up their memory and exits.
+
+	2.) AM_SERVER_TIMEOUT - If the server waits for AM_WAIT_TIME seconds without receiving a message from a client, the server will send this message and abort the maze.
+
+	3.) AM_SERVER_DISK_QUOTA - If the server cannot create or write a file because of a disk quota error, this message will be sent.
+
+	4.) AM_SERVER_OUT_OF_MEM - If the server cannot allocate enough memory to serve a maze, this message will be sent. The server will then abort and die.
+
+Algorithm for updating positions of Avatars:
+
+Initially, we calculate an equidistant point (rounded to the closest position in the maze) that we want them to all end up at. This point will most likely be close to the center.
+For each move, we calculate vertical and horizontal distance to that point from the current position of the avatar.
+Depending on whether the vertical or horizontal distance is greater, the avatar will attempt to move in that direction towards the equidistant point. Additionally, when deciding which way to move, the avatar will look at the mazeArray to see which directions have been tried. This will potentially eliminate some of the options. When it makes its move, it updates the mazeArray, which will be used for the maze graphics. It also updates its individual breadCrumbsList, to set that position as visited.
+If it hits a dead end, then it will use its knowledge of the path that it has traveled (using the breadCrumbsList) in order to back up to the last spot where the directions around it haven't been fully explored. It will also create a one-sided wall that doesn't allow other avatars to enter this dead end.  
+If they any avatars cross paths, then they will stick together to reach the equidistant point. Once they all reach the equidistant point, or they all find each other at a different point in the maze, the maze should be solved.
+
+
+(4) Data Structures
+__________________________________
+
+We will have a 2-dimensional array called mazeArray of position-structs to build up our knowledge of the maze. Each spot in the
+2-d array represents a tile in the maze, such as (0,1) or (4,5). When you index into the array, it points to a 
+position-struct. The position struct has four members: north, south, east, and west. These members are all integers, 
+and if they are set to 1, it means there is a wall there, meaning if you try to move that direction from the current
+position, you will hit a wall. On the other hand, if they are set to 0, then there is not a wall there, and the 
+avatar can move freely in that position. This 2-d array is updated after each turn, because we gain more knowledge of
+the maze. This information is used for graphics.
+
+Additionally, we will have N (for the number of avatars) doubly-linked lists, called breadCrumblists. 
+
+These doubly-linked lists have nodes that are called breadCrumbs. These breadCrumbs contain a position in the maze and pointers to the next and previous position. Thus, it is a trail of where the avatar has been in the maze. It continues to build this up until it hits a dead end, where it will back up and pop off these breadCrumbs until it gets out of the dead end and continues on a different path.
+
+
+(5) Pseudo Code
+__________________________________
+
+// Create separate threads for each of the avatars, running the avatar.c program.
+
+// Initialize and update mazeArray
+
+// Initialize and update breadCrumbsList for each avatar
+
+//Send all of the Avatar_READY messages
+
+//Once AM_AVATAR_TURN message is received, 
+
+	//An equidistant point within the maze is calculated based on the positions of all of the avatars
+
+	While still in the maze,
+
+		//each avatar takes a turn moving in the maze by sending an AM_AVATAR_MOVE message to the server with their AvatarId, and an integer indicating which direction (M_WEST, M_NORTH, M_SOUTH,
+		M_EAST)
+		// The avatars move based on the following:
+			
+			//For each move, we calculate vertical and horizontal distance to that point from the current position of the avatar
+
+			//Depending on whether the vertical or horizontal distance is greater, the avatar will attempt to move in that direction towards the equidistant point
+
+			//Additionally, when deciding which way to move, the avatar will look at the mazeArray to see
+			which directions have been tried. This will potentially eliminate some of the options.
+
+			//When it makes its move, it updates the mazeArray, which will update the maze graphics
+
+			//It also updates its individual breadCrumbsArray, to set that position as visited.
+
+			//If it hits a dead end, then it will use its knowledge of the path that it has traveled (using the breadCrumbsArray)in order to back up to the last spot where the directions around it haven't been fully explored.
+
+			If they any avatars cross paths, then they will stick together to reach the equidistant point. Once they all reach the equidistant point, the maze should be solved.
+
+//If/When an avatar sends a move request to the server that results in all of the avatars being located
+at the same (x,y) position, the server will respond with a special message containing a proof that the maze was solved. 
+
+	//If this is received, send it to the logfile, cleanup threads and memory, and exit
+
+//If the maze is not solved, the program will have ended for 1 of 4 primary reasons. 
+	1.) AM_TOO_MANY_MOVES
+	2.) AM_SERVER_TIMEOUT
+	3.) AM_SERVER_DISK_QUOTA
+	4.) AM_SERVER_OUT_OF_MEM 
+	//If any of these occurs, memory is cleaned up, and error message is printed, and the program exits.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

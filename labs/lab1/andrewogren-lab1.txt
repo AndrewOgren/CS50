@@ -1,0 +1,10 @@
+1. ps -A | grep -cv "PID"
+2. grep -c "UNIX" bad.spelling.txt
+3. ps -Al | grep "$UID"; ps -Al| grep -c "$UID"
+4. ls -rlS /etc | awk '$9 ~ /id/ {print}'| head -n 5 
+5. sed -i 's/Spring 2015/Winter 2016/' `find . -name "*.html"`
+6  cat /etc/passwd | grep "^$LOGNAME:"
+7. cat /etc/passwd | grep -o ".$SHELL"| cut -c1 | uniq
+8. cut -d':' -f7 /etc/passwd | sort -u | wc -l
+9  ls -l | sort -rn -k5
+10. cat message.txt | mailx -s "lab1" aogren@cs.dartmouth.edu

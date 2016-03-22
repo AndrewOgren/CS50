@@ -1,0 +1,126 @@
+README for Indexer
+------------------
+
+
+Compiling:
+This program should compile correctly with the use of the makefile.
+
+To compile, simply 'make clean' to get rid of any previous object files, executables,
+or other extraneous files. Then type, 'make' to compile the program. The make command 
+should be executed from the lab5 directory, where the makefile resides. The makefile should
+compile the object files in the ./src directory, and it should compile the executable, indexer,
+in the ./bin directory. Here is a tree diagram of the sub-directories and files under lab5 to aid in further
+explanation.
+
+.
+├── BATS.sh
+├── bin
+├── data
+│   ├── crawler
+│   │   ├── 1
+│   │   ├── 10
+│   │   ├── 100
+│   │   ├── 1000
+│   │   ├── 1001
+│   │   ├── 1002
+| 	|	--Snip--		
+│   │   ├── 995
+│   │   ├── 996
+│   │   ├── 997
+│   │   ├── 998
+│   │   └── 999
+│   └── indexer
+│       └── placeholder
+├── logfile.dat
+├── Makefile
+├── README
+├── Spec.pdf
+└── src
+    ├── file.c
+    ├── file.h
+    ├── hashtable.c
+    ├── hashtable.h
+    ├── indexer.c
+    ├── web.c
+    └── web.h
+
+
+Executing:
+In order to execute this program, you must be in the bin directory, where the executable was compiled.
+
+There are two ways to properly execute this program.
+
+1.) Standard:
+	The standard way of running indexer is the following:
+
+	$ ./indexer [TARGET_DIRECTORY] [RESULTS FILE NAME]
+
+	The [TARGET_DIRECTORY] should be where the html files from crawler are included. So, for my directory
+	set-up, my target directory would be "../data/crawler/". The target directory must end in a "/", or else
+	it will not run correctly, and it will give an error message.
+
+	The [RESULTS FILE NAME] should be the file that the index will be written to. The results file name should
+	already exist prior to using it as an argument.
+
+2.) Testing:
+	The way to test the indexer is the following:
+	
+	$ ./indexer [TARGET_DIRECTORY] [RESULTS FILE NAME] [RESULTS FILE NAME] [REWRITTEN FILENAME]
+
+	The [TARGET_DIRECTORY] and [RESULTS FILE NAME] are the same as in the standard execution.
+
+	The second [RESULTS FILE NAME] should be the same as the first one. 
+
+	The [REWRITTEN FILENAME] should be another file to which you would like to write the index to once
+	it is rebuilt through use of the [RESULTS FILE NAME].
+
+Additionally, there is a --help option, which will explain how to properly execute the indexer as well.
+
+Assumptions:
+
+In this program, several assumptions are made.
+
+1.) The target directory must end in a '/', so that the filename can be properly appended to create the
+	file path. If it does not end in a '/', an error message will be given, and the program will terminate.
+
+2.) The files, including the [RESULTS FILE NAME] and [REWRITTEN FILENAME] should already exist before the 
+	program is run with these files as arguments. If they do not exist, or they are not readable/writeable,
+	the program will terminate and give an appropriate error message.
+
+3.) If there is a memory allocation failure, the program terminates with an appropriate error message.
+
+4.) The program, under normal circumstances, should be able to take any directory as its target directory. However,
+	it should be stated that the program assumes that the files in this target directory are of the format produced
+	by crawler. If they are not, the program may terminate or may skip some of the html, since the first two lines of
+	the html are skipped because of the added url and depth level. 
+		Additionally, assuming that the files in the target directory are of the format produced in crawler, the indexer
+	should run fine regardless of what the target directory is. However, if one runs the BATS.sh shell script to test the
+	indexer, THE DIRECTORY STRUCTURE MUST BE THE SAME AS SHOWN ABOVE, OR ELSE TESTS THAT SHOULD RUN WITHOUT ERRORS WILL
+	ENCOUNTER ERRORS, BECAUSE THE DIRECTORY PATH IS HARD-CODED INTO THE SCRIPT. THIS DIRECTORY PATH IS, ../data/crawler/, 
+	WHERE 1746 HTML FILES ARE LOCATED, WHICH WERE CRAWLED AT DEPTH 2, USING MY OWN CRAWLER PROGRAM.
+
+5.) The --help option can be used to get information on how to properly execute the program. However, whenever this
+	option is used, the program does not run, but gives information on how to properly run the program.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
